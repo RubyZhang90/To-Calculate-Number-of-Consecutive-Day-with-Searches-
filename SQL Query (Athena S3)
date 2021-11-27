@@ -24,7 +24,7 @@ farenetdate,
 sum(searches) as searches
 FROM "farenet_s3"."aggregated_normalized_farenet_001"
           WHERE airlineiatacode = 'XX' --change the airlineIataCode here
-            AND farenetdate >= date(current_date) - interval '31' day --change the desired look back window here
+            AND farenetdate >= date(current_date) - interval '32' day --change the desired look back window here
             AND farenetdate < current_date
             AND departureairportiatacode is not null
             AND arrivalairportiatacode is not null
