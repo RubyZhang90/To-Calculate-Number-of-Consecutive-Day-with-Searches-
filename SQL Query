@@ -1,0 +1,37 @@
+SELECT * FROM
+(SELECT 
+route,
+MAX(num_cons_day) as max_num_cons_day,
+sum(searches) as searches
+from
+(
+SELECT
+route,
+farenetdate,
+searches,
+row_number()over(partition by route,GRP order by farenetdate) as num_cons_day
+from
+(select 
+route,
+farenetdate,
+searches,
+date_diff('day',date_parse('1900-01-01','%Y-%m-%d'),farenetdate) -
+row_number()over(partition by route order by farenetdate) as GRP
+from
+(select 
+concat(cast(departureairportiatacode as varchar),'>', cast(arrivalairportiatacode as varchar)) as route,
+farenetdate,
+sum(searches) as searches
+FROM "farenet_s3"."aggregated_normalized_farenet_001"
+          WHERE airlineiatacode = 'XX' --change the airlineIataCode here
+            AND farenetdate >= date(current_date) - interval '31' day --change the desired look back window here
+            AND farenetdate < current_date
+            AND departureairportiatacode is not null
+            AND arrivalairportiatacode is not null
+GROUP BY departureairportiatacode,arrivalairportiatacode,farenetdate
+ORDER BY departureairportiatacode,arrivalairportiatacode,farenetdate
+)))
+GROUP BY route
+ORDER BY route)
+WHERE max_num_cons_day >= 28 --change the threshold for consecutive days here
+;
